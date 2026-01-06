@@ -8,6 +8,13 @@ const productionFormat: Logform.Format = format.combine(
     format.errors({ stack: true }),
     format.timestamp(),
     format((info) => {
+      const { level, message, timestamp, ...etc } = info;
+      info.message = JSON.stringify({
+        level,
+        message,
+        timestamp,
+        ...etc,
+      });
       return info;
     })(),
     format.json(),
@@ -24,13 +31,15 @@ const developmentFormat: Logform.Format = format.combine(
 
 export function createWinstonOptions(): LoggerOptions {
   if (process.env.NODE_ENV === 'production') {
+    const loggingHost = process.env.LOG_HOST || 'http://localhost:3100';
+    console.log(`Using production logging format to push to log host: ${loggingHost}`);
     return {
       level: 'info',
       format: productionFormat,
       transports: [
         new transports.Console(),
         new LokiTransport({
-          host: process.env.LOKI_URL || 'http://localhost:3100/loki/api/v1/push',
+          host: loggingHost,
           labels: { application: 'otel-demo', service: serviceName },
           json: true,
         }),

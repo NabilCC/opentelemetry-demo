@@ -1,0 +1,2 @@
+### Reload Grafana Alloy configuration
+POST http://localhost:12347/-/reload

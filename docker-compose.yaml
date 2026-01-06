@@ -14,8 +14,11 @@ services:
         condition: service_started
       postgres:
         condition: service_healthy
+      alloy:
+        condition: service_started
     environment:
       ACTOR_SERVICE_URL: "http://actor-service:4001"
+      LOG_HOST: "http://alloy:3100"
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
       NODE_ENV: production
     ports:
@@ -35,6 +38,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      alloy:
+        condition: service_started
     environment:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=actor
       NODE_ENV: production
@@ -55,6 +60,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      alloy:
+        condition: service_started
     environment:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=audit
       NODE_ENV: production
@@ -96,6 +103,7 @@ services:
       - "12347:12345"
       - "12348:12348"
       - "6832:6832"
+      - "3100:3100"
       - "55679:55679"
       - "4317:4317"
       - "4318:4318"
