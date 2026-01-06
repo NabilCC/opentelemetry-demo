@@ -1,5 +1,5 @@
 import { format, Logform, LoggerOptions, transports } from 'winston';
-import LokiTransport from 'winston-loki'; // <-- Add this import
+import LokiTransport from 'winston-loki';
 
 const serviceName = process.env.SERVICE_NAME || 'movie-service';
 

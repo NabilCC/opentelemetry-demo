@@ -5,5 +5,5 @@ dist
 .DS_Store
 __generated__
 tmp
-.en
+.env
 generated

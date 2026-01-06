@@ -16,7 +16,7 @@ services:
         condition: service_healthy
     environment:
       ACTOR_SERVICE_URL: "http://actor-service:4001"
-      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
       NODE_ENV: production
     ports:
       - "4000:4000"
@@ -36,7 +36,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=actor
       NODE_ENV: production
     ports:
       - "4001:4001"
@@ -47,16 +47,16 @@ services:
       retries: 3
       start_period: 10s
   #-------------------------------------------------------------------------------------------
-  view-service:
+  audit-service:
     build:
-      context: ./view-service
+      context: ./audit-service
       dockerfile: Dockerfile
-    container_name: view-service
+    container_name: audit-service
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=audit
       NODE_ENV: production
     ports:
       - "4002:4002"
