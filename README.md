@@ -16,6 +16,18 @@ The components used to provide the OpenTelemetry implementation are:
 - Tempo - https://grafana.com/docs/tempo/latest/
 - Grafana - https://grafana.com/docs/grafana/latest/
 
+The data stack comprises:
+
+- PostgreSQL - https://www.postgresql.org/
+- Redis - https://redis.io/ 
+- Apache Kafka - https://kafka.apache.org/ 
+
+The microservices are built using:
+
+- NestJS - https://nestjs.com/
+- Prisma - https://www.prisma.io/
+- BullMQ - https://docs.bullmq.io/
+
 # Running the project
 
 All required components and services can be built and run using Docker.
