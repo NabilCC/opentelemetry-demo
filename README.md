@@ -1,4 +1,4 @@
-<h1>Core OpenTelemetry Demo</h1>
+<h1>OpenTelemetry Demo</h1>
 
 <img src="./img/opentel-logo.png" width="500">
 
