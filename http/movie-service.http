@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:4000
+
+### Movie by id - fast response
+GET {{baseUrl}}/movie/1
+
+### Movie by id - slow response
+GET {{baseUrl}}/movie/5
+
+### Movie by id - error response
+GET {{baseUrl}}/movie/10
+
+### Healthcheck
+GET {{baseUrl}}/health  

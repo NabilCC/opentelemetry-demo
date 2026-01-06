@@ -1,0 +1,142 @@
+version: "3.9"
+
+services:
+  ##------------------------------------------------------------------------------------------
+  ## MICROSERVICES
+  ##------------------------------------------------------------------------------------------
+  movie-service:
+    build:
+      context: ./movie-service
+      dockerfile: Dockerfile
+    container_name: movie-service
+    depends_on:
+      actor-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      ACTOR_SERVICE_URL: "http://actor-service:4001"
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+  #-------------------------------------------------------------------------------------------
+  actor-service:
+    build:
+      context: ./actor-service
+      dockerfile: Dockerfile
+    container_name: actor-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      NODE_ENV: production
+    ports:
+      - "4001:4001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4001/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+  #-------------------------------------------------------------------------------------------
+  view-service:
+    build:
+      context: ./view-service
+      dockerfile: Dockerfile
+    container_name: view-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=otel-demo
+      NODE_ENV: production
+    ports:
+      - "4002:4002"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4002/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+  ##------------------------------------------------------------------------------------------
+  ## DATABASE
+  ##------------------------------------------------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "4432:5432"
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: letme1n
+      POSTGRES_DB: postgres
+    volumes:
+      - ./docker/postgres/init-schema.sql:/docker-entrypoint-initdb.d/init-schema.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U sa -d postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+  ##------------------------------------------------------------------------------
+  ## OBSERVABILITY
+  ##------------------------------------------------------------------------------
+  alloy:
+    container_name: alloy
+    image: grafana/alloy:v1.8.1
+    ports:
+      - "12347:12345"
+      - "12348:12348"
+      - "6832:6832"
+      - "55679:55679"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - "./docker/alloy:/etc/alloy"
+    command: [
+      "run",
+      "--server.http.listen-addr=0.0.0.0:12345",
+      "--stability.level=experimental",
+      "/etc/alloy/config.alloy",
+    ]
+  ##------------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:3.5.3
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./docker/loki.yaml:/etc/loki/loki-config.yaml
+    depends_on:
+      - alloy
+  ##------------------------------------------------------------------------------
+  tempo:
+    image: grafana/tempo:2.8.2
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo.yaml:/etc/tempo.yaml
+    depends_on:
+      - alloy
+  ##------------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:12.0
+    container_name: grafana
+    volumes:
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    depends_on:
+      - loki

@@ -1,0 +1,15 @@
+generator client {
+  provider      = "prisma-client"
+  output        = "./generated"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model views {
+  movieId   Int @id @map("movie_id")
+  viewCount Int @map("view_count")
+}

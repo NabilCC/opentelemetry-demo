@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:4001
+
+### Actor by id
+GET {{baseUrl}}/actor/5
+
+### Healthcheck
+GET {{baseUrl}}/health

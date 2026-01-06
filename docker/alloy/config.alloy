@@ -1,0 +1,125 @@
+//==============================================================================
+// Enable live debugging
+// nb start alloy docker container with: "--stability.level=experimental"
+//==============================================================================
+livedebugging {
+  enabled = true
+}
+
+//=============================================================================
+// LOKI LOGGING FOR ALLOY
+// - writes alloy logs to loki (i.e. just the logs from alloy itself NOT applications)
+// - adds custom labels
+// - can be commented out/ignored if necessary
+//=============================================================================
+logging {
+    format = "logfmt"
+    level  = "debug"
+
+    write_to = [loki.relabel.alloy_logs.receiver]
+}
+
+loki.relabel "alloy_logs" {
+    forward_to = [loki.write.alloy.receiver]
+
+    rule {
+        target_label = "group"
+        replacement  = "nabil"
+    }
+
+    rule {
+        target_label = "service"
+        replacement  = "alloy"
+    }
+}
+
+loki.write "alloy" {
+    endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+    }
+}
+
+//=============================================================================
+// OTEL COLLECTOR
+// - receives traces and spans from the Java agent running on the microservices
+// - batches traces and spans for efficiency
+// - forwards collected data to tempo
+//=============================================================================
+// OTLP receiver – listens on 4317 (gRPC) and 4318 (HTTP)
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    logs    = [otelcol.processor.filter.drop_traces.input]
+    traces  = [otelcol.processor.filter.drop_traces.input]
+  }
+}
+
+// Filter processor to drop spans/logs associated with healthchecks
+otelcol.processor.filter "drop_traces" {
+  error_mode = "ignore"
+
+  traces {
+    span = [
+        `IsMatch(attributes["url.path"], "^/.*actuator.*")`,
+        `attributes["db.operation"] == "SENTINEL"`,
+        `attributes["db.operation"] == "PING"`,
+      ]
+   }
+
+  logs {
+    log_record= [
+      `IsMatch(attributes["url.path"], "^/.*actuator.*")`,
+      `attributes["db.operation"] == "SENTINEL"`,
+      `attributes["db.operation"] == "PING"`,
+    ]
+  }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+    logs   = [otelcol.processor.batch.logs.input]
+  }
+}
+
+// Batch processors (good practice for performance)
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+  timeout = "2s"
+}
+
+otelcol.processor.batch "logs" {
+  output {
+    logs = [otelcol.exporter.otlphttp.loki.input]
+  }
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+  timeout = "2s"
+}
+
+// Export traces via OTLP to Tempo
+otelcol.exporter.otlp "tempo" {
+  client {
+  	endpoint = "tempo:4317"
+  	tls {
+    	insecure = true
+  	}
+  }
+}
+
+// Export logs to Loki
+otelcol.exporter.otlphttp "loki" {
+  client {
+  	endpoint = "http://loki:3100/otlp/"
+  	tls {
+    	insecure = true
+  	}
+  }
+}
