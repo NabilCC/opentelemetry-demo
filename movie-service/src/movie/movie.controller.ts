@@ -19,7 +19,8 @@ export class MovieController {
 
     // TODO: Send user access request to Bull MQ
 
-    this.logger.log(`GET movie by id: ${movieId}`);
+    this.logger.log({message: `GET movie by id: ${movieId}`, labels: { 'key': 'value' }});
+
     const result = await this.movieService.findMovieById(movieId);
     if (!result) {
       this.logger.error(`Movie ${movieId} was not found.`);
