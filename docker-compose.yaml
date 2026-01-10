@@ -18,7 +18,7 @@ services:
         condition: service_started
     environment:
       ACTOR_SERVICE_URL: "http://actor-service:4001"
-      LOGGING_HOST: "http://loki:3100"
+      LOGGING_HOST: "http://alloy:3100"
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
     ports:
       - "4000:4000"
