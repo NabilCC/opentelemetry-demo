@@ -3,7 +3,6 @@ import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
 import {Logger} from '@nestjs/common';
 import {WinstonModule} from "nest-winston";
-import {info} from "winston";
 import {winstonOptions} from "./winston.config";
 
 

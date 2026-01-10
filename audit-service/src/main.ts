@@ -1,12 +1,12 @@
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
-import {createWinstonOptions} from "./logger.config";
 import {WinstonModule} from "nest-winston";
 import {Logger} from '@nestjs/common';
+import {winstonOptions} from "./winston.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(createWinstonOptions()),
+    logger: WinstonModule.createLogger(winstonOptions()),
   });
 
   const port = process.env.PORT || 4002;
