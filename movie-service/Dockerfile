@@ -29,6 +29,9 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY prisma ./prisma
 
+ENV NODE_ENV=production
+ENV SERVICE_NAME=movie-service
+
 # Generate Prisma Client (in case it wasn't during build)
 RUN npx prisma generate
 COPY prisma/generated/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node dist/prisma/generated

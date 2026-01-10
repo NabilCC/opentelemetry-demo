@@ -20,8 +20,6 @@ services:
       ACTOR_SERVICE_URL: "http://actor-service:4001"
       LOGGING_HOST: "http://loki:3100"
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
-      NODE_ENV: production
-      ALTERNATIVE_LOG_FORMAT_JSON: "true"
     ports:
       - "4000:4000"
     healthcheck:
@@ -44,7 +42,6 @@ services:
     environment:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=actor
       LOGGING_HOST: "http://alloy:3100"
-      NODE_ENV: production
     ports:
       - "4001:4001"
     healthcheck:
@@ -125,8 +122,6 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
     volumes:
       - ./docker/loki.yaml:/etc/loki/loki-config.yaml
-    depends_on:
-      - alloy
   ##------------------------------------------------------------------------------
   tempo:
     image: grafana/tempo:2.8.2

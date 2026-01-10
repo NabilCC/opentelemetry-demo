@@ -31,7 +31,7 @@ const productionWinstonOptions: winston.LoggerOptions = {
       format: lokiTransportFormat,
       interval: 5,
       labels: {
-        application: 'otel-demo', service: serviceName
+        app: 'otel-demo', service: serviceName
       },
       onConnectionError: (err) => {
         console.error('Error connecting logger to Loki', err);
@@ -54,5 +54,10 @@ const developmentWinstonOptions: winston.LoggerOptions = {
   transports: [new transports.Console()],
 };
 
-export const winstonOptions = isProduction ?
-    productionWinstonOptions : developmentWinstonOptions;
+export const winstonOptions = ():winston.LoggerOptions => {
+  if (isProduction) {
+    console.log(`Using production logging with logging host=${loggingHost}`);
+    return productionWinstonOptions;
+  }
+  return developmentWinstonOptions;
+}

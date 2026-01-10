@@ -1,6 +1,6 @@
 import {format, Logform, LoggerOptions, transports} from 'winston';
 
-const serviceName = process.env.SERVICE_NAME || 'audit-service';
+const serviceName = process.env.SERVICE_NAME || 'actor-service';
 
 const productionFormat: Logform.Format = format.combine(
     format.errors({ stack: true }),

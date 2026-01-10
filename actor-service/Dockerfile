@@ -24,6 +24,9 @@ FROM node:22-alpine AS prod
 WORKDIR /usr/src/app
 RUN apk add --no-cache openssl curl
 
+ENV NODE_ENV=production
+ENV SERVICE_NAME=actor-service
+
 COPY package.json ./
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
