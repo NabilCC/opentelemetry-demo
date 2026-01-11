@@ -14,12 +14,15 @@ services:
         condition: service_started
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       alloy:
         condition: service_started
     environment:
       ACTOR_SERVICE_URL: "http://actor-service:4001"
       LOGGING_HOST: "http://alloy:3100"
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
+      REDIS_HOST: redis
     ports:
       - "4000:4000"
     healthcheck:
@@ -65,6 +68,7 @@ services:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=audit
       LOGGING_HOST: "http://alloy:3100"
       NODE_ENV: production
+      REDIS_HOST: redis
     ports:
       - "4002:4002"
     healthcheck:
@@ -93,6 +97,30 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+  ##------------------------------------------------------------------------------
+  ## REDIS
+  ##------------------------------------------------------------------------------
+  redis:
+    image: redis:8
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis-seed:
+    image: redis:8
+    container_name: redis-seed
+    depends_on:
+      - redis
+    volumes:
+      - ./docker/redis/init/seed-users.sh:/seed.sh:ro
+    entrypoint: [ "/seed.sh" ]
   ##------------------------------------------------------------------------------
   ## OBSERVABILITY
   ##------------------------------------------------------------------------------

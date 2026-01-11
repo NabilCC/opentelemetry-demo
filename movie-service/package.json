@@ -24,6 +24,7 @@
         "@nestjs/platform-express": "^11.0.1",
         "@prisma/client": "^6.19.1",
         "axios": "^1.13.2",
+        "bullmq": "^5.66.4",
         "nest-winston": "^1.10.2",
         "prisma": "^6.19.1",
         "reflect-metadata": "^0.2.2",

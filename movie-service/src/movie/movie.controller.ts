@@ -1,11 +1,12 @@
 import {BadRequestException, Controller, Get, Headers, HttpException, HttpStatus, Logger, Param, ParseIntPipe} from '@nestjs/common';
 import {MovieService} from "./movie.service";
+import {UserService} from "../user/user.service";
 
 @Controller('movie')
 export class MovieController {
   private readonly logger = new Logger(MovieController.name);
 
-  constructor(private readonly movieService: MovieService) {
+  constructor(private readonly movieService: MovieService, private readonly userService: UserService) {
   }
 
   @Get(':id')
@@ -14,6 +15,12 @@ export class MovieController {
     if (!userId) {
       throw new BadRequestException('x-user-id header is required');
     }
+
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException(`Invalid userId.`);
+    }
+    this.logger.log(`Retrieved user details from Redis: ${JSON.stringify(user)}`);
 
     // TODO: lookup the user from the Redis cache
 
