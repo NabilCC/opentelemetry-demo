@@ -23,6 +23,7 @@ services:
       LOGGING_HOST: "http://alloy:3100"
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=movie
       REDIS_HOST: redis
+      TEMPO_TRACES_URL: "http://tempo:4318/v1/traces"
     ports:
       - "4000:4000"
     healthcheck:
@@ -45,6 +46,7 @@ services:
     environment:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=actor
       LOGGING_HOST: "http://alloy:3100"
+      TEMPO_TRACES_URL: "http://tempo:4318/v1/traces"
     ports:
       - "4001:4001"
     healthcheck:
@@ -67,6 +69,7 @@ services:
     environment:
       DATABASE_URL: postgres://sa:letme1n@postgres:5432/postgres?schema=audit
       LOGGING_HOST: "http://alloy:3100"
+      TEMPO_TRACES_URL: "http://tempo:4318/v1/traces"
       NODE_ENV: production
       REDIS_HOST: redis
     ports:

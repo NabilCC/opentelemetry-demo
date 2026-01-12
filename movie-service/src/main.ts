@@ -1,4 +1,5 @@
 // main.ts
+import './tracing'; // MUST be first
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
 import {Logger} from '@nestjs/common';
