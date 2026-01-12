@@ -9,6 +9,10 @@ export class ActorService {
   }
 
   async findActorById(id: number) {
+    if (id > 14) {
+      this.logger.log(`Delay for 1 second`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
     this.logger.log(`Fetch actor ${id} from DB`);
     return this.prismaService.actor.findUnique({
       where: {id}
