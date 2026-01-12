@@ -1,5 +1,6 @@
 import winston, {format, transports} from 'winston';
 import LokiTransport from 'winston-loki';
+import { context, trace } from '@opentelemetry/api';
 
 const loggingHost = process.env.LOGGING_HOST || 'http://localhost:3100';
 const serviceName = process.env.SERVICE_NAME || 'movie-service';
@@ -19,9 +20,23 @@ const lokiTransportFormat = winston.format.combine(
     winston.format.json()
 );
 
+const tracingFormat = format((info) => {
+  const span = trace.getSpan(context.active());
+
+  if (span) {
+    const spanContext = span.spanContext();
+    info.trace_id = spanContext.traceId;
+    info.span_id = spanContext.spanId;
+  }
+
+  return info;
+});
+
+
 const productionWinstonOptions: winston.LoggerOptions = {
   level: 'info',
   format: winston.format.combine(
+      tracingFormat(),
       winston.format.timestamp(),
       winston.format.errors({stack: true})
   ),
@@ -31,7 +46,7 @@ const productionWinstonOptions: winston.LoggerOptions = {
       format: lokiTransportFormat,
       interval: 5,
       labels: {
-        app: 'otel-demo', service: serviceName
+        app: 'otel-demo', service: serviceName, service_name: serviceName
       },
       onConnectionError: (err) => {
         console.error('Error connecting logger to Loki', err);

@@ -30,4 +30,4 @@ datasources:
         datasourceUid: "loki_ds"
         filterBySpanID: false
         filterByTraceID: false
-        query: '{service_name=~".+"} | trace_id = `$${__span.traceId}`'      
+        query: '{service_name=~".+"} | json | trace_id = `$${__span.traceId}`'
