@@ -31,3 +31,5 @@ datasources:
         filterBySpanID: false
         filterByTraceID: false
         query: '{service_name=~".+"} | json | trace_id = `$${__span.traceId}`'
+        spanStartTimeShift: "-10s"
+        spanEndTimeShift: "10s"
