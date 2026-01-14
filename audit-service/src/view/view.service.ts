@@ -9,5 +9,17 @@ export class ViewService {
   }
 
   async incrementViewsForMovie(movieId: number) {
+    this.logger.log(`Increment view count of movie: ${movieId}`);
+
+    await this.prismaService.views.update({
+      where: {
+        movieId
+      },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+    });
   }
 }

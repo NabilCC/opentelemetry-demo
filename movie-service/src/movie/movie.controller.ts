@@ -22,9 +22,7 @@ export class MovieController {
     }
     this.logger.log(`Retrieved user details from Redis: ${JSON.stringify(user)}`);
 
-    // TODO: lookup the user from the Redis cache
-
-    // TODO: Send user access request to Bull MQ
+    // TODO: Send user access request to Kafka
 
     this.logger.log({message: `GET movie by id: ${movieId}`, labels: { 'key': 'value' }});
 
