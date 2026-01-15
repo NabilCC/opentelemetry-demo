@@ -63,3 +63,60 @@ loki.process "winston" {
 
       forward_to = [loki.write.alloy.receiver]
 }
+
+//=============================================================================
+// OTEL COLLECTOR
+// - batches traces and spans and logs for efficiency
+// - forwards collected data to tempo
+//=============================================================================
+// OTLP receiver – listens on 4317 (gRPC) and 4318 (HTTP)
+// this is what receives the traces and spans
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    logs    = [otelcol.processor.filter.drop_traces.input]
+    traces  = [otelcol.processor.filter.drop_traces.input]
+  }
+}
+
+// Filter processor to drop spans/logs associated with healthchecks
+otelcol.processor.filter "drop_traces" {
+  error_mode = "ignore"
+
+  traces {
+    span = [
+        `IsMatch(attributes["url.path"], "^/.*actuator.*")`,
+        `attributes["db.operation"] == "SENTINEL"`,
+        `attributes["db.operation"] == "PING"`,
+      ]
+   }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+  }
+}
+
+// Batch processors (good practice for performance)
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+  send_batch_size     = 1000
+  send_batch_max_size = 2000
+  timeout = "2s"
+}
+
+// Export traces via OTLP to Tempo
+otelcol.exporter.otlp "tempo" {
+  client {
+  	endpoint = "tempo:4317"
+  	tls {
+    	insecure = true
+  	}
+  }
+}

@@ -46,7 +46,7 @@ const productionWinstonOptions: winston.LoggerOptions = {
       format: lokiTransportFormat,
       interval: 5,
       labels: {
-        app: 'otel-demo', service: serviceName, "service.name": serviceName
+        app: 'otel-demo', service: serviceName, service_name: serviceName
       },
       onConnectionError: (err) => {
         console.error('Error connecting logger to Loki', err);
