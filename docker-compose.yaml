@@ -33,7 +33,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
       interval: 10s
       timeout: 3s
-      retries: 3
+      retries: 10
       start_period: 10s
   #-------------------------------------------------------------------------------------------
   actor-service:
@@ -84,7 +84,7 @@ services:
       test: [ "CMD", "curl", "-f", "http://localhost:4002/health" ]
       interval: 10s
       timeout: 3s
-      retries: 3
+      retries: 10
       start_period: 10s
   ##------------------------------------------------------------------------------------------
   ## DATABASE
@@ -234,7 +234,7 @@ services:
       KAFKA_JMX_PORT: 9997
       KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka0 -Dcom.sun.management.jmxremote.rmi.port=9997
     volumes:
-      - ./docker-volume/kafka/update_run.sh:/tmp/update_run.sh
+      - ./docker/kafka/update_run.sh:/tmp/update_run.sh
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
     healthcheck:
       test: [ "CMD", "bash", "-c", "kafka-broker-api-versions --bootstrap-server kafka0:9092" ]

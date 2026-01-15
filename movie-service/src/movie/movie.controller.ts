@@ -21,9 +21,6 @@ export class MovieController {
       throw new BadRequestException(`Invalid userId.`);
     }
     this.logger.log(`Retrieved user details from Redis: ${JSON.stringify(user)}`);
-
-    // TODO: Send user access request to Kafka
-
     this.logger.log({message: `GET movie by id: ${movieId}`, labels: { 'key': 'value' }});
 
     const result = await this.movieService.findMovieById(movieId);
@@ -31,6 +28,9 @@ export class MovieController {
       this.logger.error(`Movie ${movieId} was not found.`);
       throw new HttpException("Movie does not exist", HttpStatus.NOT_FOUND);
     }
+
+    this.logger.log(`Publish movie viewed event to Kafka with movieId:${movieId}.`);
+    await this.movieService.publishMovieViewedEvent({movieId});
     return result;
   }
 }

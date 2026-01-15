@@ -1,9 +1,10 @@
-import {HttpException, Injectable, Logger} from '@nestjs/common';
+import {HttpException, Inject, Injectable, Logger} from '@nestjs/common';
 import {PrismaService} from "../prisma/prisma.service";
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import {ConfigService} from "@nestjs/config";
 import {AxiosError} from "axios";
+import {ClientKafka} from "@nestjs/microservices";
 
 @Injectable()
 export class MovieService {
@@ -12,13 +13,22 @@ export class MovieService {
 
   constructor(private readonly prismaService: PrismaService,
               private readonly http: HttpService,
-              private readonly configService: ConfigService) {
+              private readonly configService: ConfigService,
+              @Inject('KAFKA_PRODUCER')
+              private readonly kafka: ClientKafka) {
     this.actorServiceUrl = this.configService.getOrThrow("ACTOR_SERVICE_URL");
     if (!this.actorServiceUrl.startsWith('http://')) {
       throw new Error(
           `Invalid ACTOR_SERVICE_URL "${this.actorServiceUrl}". It must start with "http://".`,
       );
     }
+  }
+
+  async publishMovieViewedEvent(event: {movieId: number}) {
+    this.kafka.emit('movies.views.incremented', {
+      key: event.movieId,
+      value: event,
+    });
   }
 
   async findMovieById(id: number) {
