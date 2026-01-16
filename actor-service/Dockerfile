@@ -36,5 +36,8 @@ COPY prisma ./prisma
 RUN npx prisma generate
 COPY prisma/generated/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node dist/prisma/generated
 
-# Run migrations on container start, then start Nest
-CMD npx prisma migrate deploy && node dist/src/main.js
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["./app"]
