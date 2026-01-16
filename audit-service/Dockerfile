@@ -22,7 +22,7 @@ RUN npm run build
 # ---------- Production Image ----------
 FROM node:22-alpine AS prod
 WORKDIR /usr/src/app
-RUN apk add --no-cache openssl curl
+RUN apk add --no-cache openssl tini curl
 
 COPY package.json ./
 COPY --from=deps /usr/src/app/node_modules ./node_modules
@@ -39,5 +39,5 @@ COPY prisma/generated/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node dis
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["./app"]
+ENTRYPOINT ["/sbin/tini", "-g", "--", "/entrypoint.sh"]
+CMD ["node", "dist/src/main.js"]
